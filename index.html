@@ -2,93 +2,147 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
-  <title>결혼식장 가는 길 러너</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <title>Wedding Run</title>
+  <style>
+    :root{
+      --bg1:#fff7fb; --bg2:#fff0e6;
+      --ink:rgba(60,38,52,.92);
+      --pink:rgba(255,111,174,.95);
+      --mint:rgba(124,214,198,.95);
+      --card:rgba(255,255,255,.92);
+      --stroke:rgba(60,38,52,.18);
+      --shadow:0 18px 50px rgba(60,38,52,.18);
+      --r:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%; margin:0; font-family:system-ui,-apple-system,'Noto Sans KR',sans-serif; color:var(--ink); background:linear-gradient(180deg,var(--bg1),var(--bg2));}
+    body{display:flex; justify-content:center; align-items:stretch;}
+    .wrap{width:min(520px,100vw); height:100dvh; position:relative; overflow:hidden;}
+    canvas{width:100%; height:100%; display:block;}
+    /* HUD */
+    #hud{position:absolute; inset:0 0 auto 0; padding:12px 12px 0; display:flex; gap:10px; justify-content:space-between; align-items:flex-start; pointer-events:none;}
+    .pill{background:var(--card); border:1px solid var(--stroke); border-radius:999px; padding:10px 14px; box-shadow:0 10px 30px rgba(60,38,52,.10); font-weight:800; pointer-events:auto;}
+    .pill b{font-variant-numeric:tabular-nums}
+    .hudBtns{display:flex; gap:10px; pointer-events:auto;}
+    button{font:inherit}
+    .btnSmall{border:1px solid var(--stroke); background:var(--card); border-radius:999px; padding:10px 14px; font-weight:900;}
+    .btnSmall:active{transform:translateY(1px)}
+    /* Overlays */
+    .overlay{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:18px; backdrop-filter: blur(10px); background:rgba(255,247,251,.55);}
+    .hidden{display:none!important;}
+    .card{width:min(480px,100%); background:var(--card); border:1px solid var(--stroke); border-radius:var(--r); box-shadow:var(--shadow); padding:18px;}
+    .title{font-size:22px; font-weight:1000; margin:0 0 8px;}
+    .sub{margin:0 0 14px; opacity:.85; line-height:1.5}
+    .row{display:flex; gap:10px; flex-wrap:wrap}
+    .btn{border:1px solid var(--stroke); background:white; border-radius:16px; padding:12px 14px; font-weight:950; flex:1; min-width:130px;}
+    .btn.primary{background:var(--pink); color:white; border-color:transparent;}
+    .btn.mint{background:var(--mint); color:white; border-color:transparent;}
+    .btn:active{transform:translateY(1px)}
+    .imgBox{border:1px solid var(--stroke); border-radius:18px; overflow:hidden; background:white;}
+    .imgBox img{display:block; width:100%; height:auto;}
+    /* Gift form */
+    .gift-form{margin-top:14px; padding-top:14px; border-top:1px dashed rgba(60,38,52,.18);}
+    .form-title{font-weight:1000; margin:0 0 10px;}
+    input{width:100%; padding:12px 12px; border-radius:14px; border:1px solid rgba(60,38,52,.18); background:white; font-size:16px; margin:0 0 10px;}
+    .form-note{font-size:12px; opacity:.75; line-height:1.4; margin-top:8px;}
+    .status{margin-top:10px; font-weight:900;}
+    a.btn{display:inline-flex; align-items:center; justify-content:center; text-decoration:none;}
+  </style>
 </head>
 <body>
-  <div id="app">
+  <div class="wrap">
     <canvas id="game"></canvas>
 
-    <!-- 상단 HUD -->
-    <div id="hud">
-      <div class="pill" id="scorePill">점수 <span id="score">0</span></div>
-      <button class="pill btn" id="btnGuide" aria-label="길안내 보기">길안내</button>
-      <button class="pill btn" id="btnPause" aria-label="일시정지">일시정지</button>
-    </div>
-
-    <!-- 시작 화면 -->
-    <div class="overlay" id="startOverlay">
-      <div class="card">
-        <h1>우리 결혼합니다 💍</h1>
-        <p class="sub">
-          화면을 <b>탭</b>하면 점프!<br/>
-          위쪽 안내판(버스→지하철→차량 순서)을 보며 예식장까지 달려가요 🧸🐰
-        </p>
-        <ul class="tips">
-          <li>점수: 장애물 1개 통과할 때마다 <b>+10점</b></li>
-          <li>도착: <b>120점</b> 달성 시 엔딩</li>
-          <li>안내판: 화면 위쪽(민트)</li>
-          <li>장애물: 화면 아래쪽(핑크) — 택시/버스정류장/지하철역</li>
-        </ul>
-        <button class="primary" id="btnStart">시작하기</button>
-        <div class="note">※ 모바일 전용 최적화</div>
+    <!-- HUD -->
+    <div id="hud" class="">
+      <div class="pill">점수 <b id="score">0</b></div>
+      <div class="hudBtns">
+        <button id="btnGuide" class="btnSmall">길안내</button>
+        <button id="btnPause" class="btnSmall">일시정지</button>
       </div>
     </div>
 
-    <!-- 길안내 지도 -->
-    <div class="overlay hidden" id="guideOverlay">
-      <div class="card wide">
+    <!-- Start -->
+    <div id="startOverlay" class="overlay">
+      <div class="card">
+        <h1 class="title">💗 웨딩 런</h1>
+        <p class="sub">화면을 탭해서 점프! 장애물을 넘어서 예식장까지 도착해요.<br/>목표 점수 <b>120점</b> (장애물 1개 = 10점)</p>
         <div class="row">
-          <h2>길안내 지도</h2>
-          <button class="ghost" id="btnGuideClose">닫기</button>
-        </div>
-        <div class="imgWrap">
-          <img id="guideImg" src="assets/map.png" alt="결혼식장 길안내 지도" />
+          <button id="btnStart" class="btn primary">시작하기</button>
+          <button id="btnGuideClose" class="btn" onclick="document.getElementById('guideOverlay').classList.remove('hidden')">길안내 보기</button>
         </div>
       </div>
     </div>
 
-    <!-- 게임오버 -->
-    <div class="overlay hidden" id="gameOverOverlay">
+    <!-- Guide -->
+    <div id="guideOverlay" class="overlay hidden">
       <div class="card">
-        <h2>앗! 장애물에 걸렸어요 😵</h2>
-        <p class="sub">대신… 잠깐 우리 사진 보고 다시 출발! 📸</p>
-        <div class="photoFrame">
-          <img id="deathPhoto" alt="웨딩 사진" />
+        <h2 class="title">길안내</h2>
+        <p class="sub">게임 상단 안내판(버스 → 지하철 → 차량)을 참고해 오세요 😊</p>
+        <div class="imgBox">
+          <img src="assets/map.png" alt="길안내 지도" />
         </div>
-        <div class="row gap">
-          <button class="primary" id="btnRetry">다시 도전</button>
-          <button class="ghost" id="btnOpenGuide2">길안내 보기</button>
+        <div class="row" style="margin-top:12px">
+          <button id="btnGuideCloseGuide" class="btn primary">닫기</button>
         </div>
       </div>
     </div>
 
-    <!-- 엔딩 QR 팝업 -->
-    <div class="overlay hidden" id="finalOverlay">
+    <!-- Pause -->
+    <div id="pauseOverlay" class="overlay hidden">
       <div class="card">
-        <h2>우리 이제 결혼해요 💗</h2>
-        <p class="sub">아래 QR로 모바일 청첩장을 확인해 주세요!</p>
-        <div class="photoFrame" style="aspect-ratio: 1/1;">
-          <img id="qrImg" src="assets/qr.png" alt="모바일 청첩장 QR" />
-        </div>
-        <div class="row gap">
-          <button class="primary" id="btnFinalClose">종료하기</button>
-          <button class="ghost" id="btnFinalRestart">처음부터</button>
+        <h2 class="title">⏸ 잠깐 멈춤</h2>
+        <p class="sub">준비되면 다시 시작!</p>
+        <div class="row">
+          <button id="btnResume" class="btn primary">계속</button>
         </div>
       </div>
     </div>
 
-    <!-- 일시정지 -->
-    <div class="overlay hidden" id="pauseOverlay">
+    <!-- Game Over -->
+    <div id="gameOverOverlay" class="overlay hidden">
       <div class="card">
-        <h2>일시정지 ⏸️</h2>
-        <p class="sub">잠깐 쉬었다가 다시 달려요!</p>
-        <button class="primary" id="btnResume">계속하기</button>
+        <h2 class="title">앗! 장애물에 걸렸어요 😵‍💫</h2>
+        <p class="sub">대신… 잠깐 우리 사진 보고 다시 출발!</p>
+        <div class="imgBox">
+          <img id="deathPhoto" src="" alt="웨딩 사진" />
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button id="btnRetry" class="btn primary">다시 도전</button>
+          <button id="btnOpenGuide2" class="btn">길안내 보기</button>
+        </div>
+        <div class="form-note">팁: 민트는 “안내”, 핑크는 “장애물”!</div>
       </div>
     </div>
+
+    <!-- Final -->
+    <div id="finalOverlay" class="overlay hidden">
+      <div class="card">
+        <h2 class="title">🎉 도착! 우리 이제 결혼해요</h2>
+        <p class="sub">모바일 청첩장을 바로 열어볼 수 있어요.</p>
+
+        <div class="row">
+          <a id="btnInviteLink" class="btn mint" href="#" target="_blank" rel="noopener">모바일 청첩장 바로 열기</a>
+          <button id="btnFinalRestart" class="btn">다시 플레이</button>
+        </div>
+
+        <div class="gift-form">
+          <div class="form-title">🎁 추첨 이벤트 참여</div>
+          <input id="giftName" type="text" placeholder="이름" autocomplete="name" />
+          <input id="giftPhone" type="tel" placeholder="휴대폰번호 (예: 01012345678)" inputmode="numeric" />
+          <button id="btnGiftSubmit" class="btn primary">응모하기</button>
+          <div class="form-note">※ 입력하신 정보는 추첨 및 안내용으로만 사용됩니다.</div>
+          <div id="giftStatus" class="status"></div>
+        </div>
+
+        <div class="row" style="margin-top:12px">
+          <button id="btnFinalClose" class="btn">종료</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="game.js"></script>
   </div>
-
-  <script src="game.js"></script>
 </body>
 </html>

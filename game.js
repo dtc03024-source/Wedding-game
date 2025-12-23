@@ -2,6 +2,12 @@
   const canvas = document.getElementById("game");
   const ctx = canvas.getContext("2d");
 
+  // ===== External links / API =====
+  const INVITE_URL = "https://m.site.naver.com/1VRaQ";
+  const API_URL = "https://script.google.com/macros/s/AKfycbxeiHace85Olrq9H233_Lcfs-OoLkhjmOMYbQVevb09QnxgSnr0F7JiJNHzx7p5U1Dnlg/exec";
+  const SPEED_SCALE = 0.7; // 30% slower
+
+
   // ===== UI =====
   const hud = document.getElementById("hud");
   const scoreEl = document.getElementById("score");
@@ -11,7 +17,7 @@
 
   const guideOverlay = document.getElementById("guideOverlay");
   const btnGuide = document.getElementById("btnGuide");
-  const btnGuideClose = document.getElementById("btnGuideClose");
+  const btnGuideCloseGuide = document.getElementById("btnGuideCloseGuide");
 
   const gameOverOverlay = document.getElementById("gameOverOverlay");
   const btnRetry = document.getElementById("btnRetry");
@@ -21,6 +27,13 @@
   const finalOverlay = document.getElementById("finalOverlay");
   const btnFinalClose = document.getElementById("btnFinalClose");
   const btnFinalRestart = document.getElementById("btnFinalRestart");
+
+  // (Ending) Invite link + gift form
+  const btnInviteLink = document.getElementById("btnInviteLink");
+  const giftNameEl = document.getElementById("giftName");
+  const giftPhoneEl = document.getElementById("giftPhone");
+  const btnGiftSubmit = document.getElementById("btnGiftSubmit");
+  const giftStatusEl = document.getElementById("giftStatus");
 
   const pauseOverlay = document.getElementById("pauseOverlay");
   const btnPause = document.getElementById("btnPause");
@@ -157,8 +170,8 @@
 
   const world = {
     t: 0,
-    speed: 250,
-    speedUp: 5,
+    speed: 250 * SPEED_SCALE,
+    speedUp: 5 * SPEED_SCALE,
     score: 0,
 
     nextObstacleIn: 0,
@@ -180,7 +193,8 @@
 
   function resetGame() {
     world.t = 0;
-    world.speed = 250;
+    world.speed = 250 * SPEED_SCALE;
+    world.speedUp = 5 * SPEED_SCALE;
     world.score = 0;
 
     world.nextObstacleIn = 1.05;
@@ -352,6 +366,45 @@
     jump();
   });
 
+  
+  // ===== Ending UI (invite + gift) =====
+  function prepareFinalUI() {
+    if (btnInviteLink) btnInviteLink.href = INVITE_URL;
+
+    if (giftNameEl) { giftNameEl.disabled = false; giftNameEl.value = ""; }
+    if (giftPhoneEl) { giftPhoneEl.disabled = false; giftPhoneEl.value = ""; }
+    if (btnGiftSubmit) btnGiftSubmit.disabled = false;
+    if (giftStatusEl) giftStatusEl.textContent = "";
+  }
+
+  async function submitGiftEntry() {
+    if (!giftStatusEl) return;
+
+    const name = (giftNameEl?.value || "").trim();
+    const phoneRaw = (giftPhoneEl?.value || "").trim();
+    const phone = phoneRaw.replace(/[^0-9]/g, "");
+
+    if (!name) { giftStatusEl.textContent = "이름을 입력해 주세요."; return; }
+    if (phone.length < 10) { giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요."; return; }
+
+    giftStatusEl.textContent = "응모 중입니다…";
+
+    try {
+      await fetch(API_URL, {
+        method: "POST",
+        mode: "no-cors",
+        body: new URLSearchParams({ name, phone }),
+      });
+giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
+      if (btnGiftSubmit) btnGiftSubmit.disabled = true;
+      if (giftNameEl) giftNameEl.disabled = true;
+      if (giftPhoneEl) giftPhoneEl.disabled = true;
+    } catch (e) {
+      giftStatusEl.textContent = "전송 실패. 네트워크 확인 후 다시 시도해 주세요.";
+    }
+  }
+
+
   // ===== Buttons =====
   btnStart.addEventListener("click", () => {
     startOverlay.classList.add("hidden");
@@ -367,9 +420,16 @@
     pauseOverlay.classList.add("hidden");
     guideOverlay.classList.remove("hidden");
   });
-  btnGuideClose.addEventListener("click", () => {
+  btnGuideCloseGuide.addEventListener("click", () => {
     guideOverlay.classList.add("hidden");
-    paused = false;
+
+    // If guide was opened from Game Over, return to Game Over overlay
+    if (!player.alive) {
+      gameOverOverlay.classList.remove("hidden");
+      paused = true;
+    } else {
+      paused = false;
+    }
   });
   btnOpenGuide2.addEventListener("click", () => {
     gameOverOverlay.classList.add("hidden");
@@ -395,6 +455,8 @@
     paused = false;
     resetGame();
   });
+  btnGiftSubmit?.addEventListener("click", submitGiftEntry);
+
   btnFinalClose.addEventListener("click", () => {
     finalOverlay.classList.add("hidden");
     running = false;
@@ -848,7 +910,7 @@
   // ===== Update =====
   function update(dt) {
     world.t += dt;
-    world.speed = 250 + Math.floor(world.t / 12) * world.speedUp;
+    world.speed = (250 + Math.floor(world.t / 12) * world.speedUp) * SPEED_SCALE;
 
     if (world.reached) {
       world.confetti.forEach(c => {
@@ -870,6 +932,7 @@
         if (finalOverlay.classList.contains("hidden")) {
           paused = true;
           finalOverlay.classList.remove("hidden");
+          prepareFinalUI();
         }
       }
       return;
@@ -890,8 +953,9 @@
     world.nextObstacleIn -= dt;
     if (world.nextObstacleIn <= 0) {
       spawnObstacle();
-      world.nextObstacleIn = clamp(1.22 - world.t * 0.008, 0.70, 1.22) * (0.95 + Math.random() * 0.55);
-    }
+      world.nextObstacleIn =
+      clamp(1.65 - world.t * 0.006, 1.05, 1.65) * (1.00 + Math.random() * 0.55);
+}
 
     world.nextSignIn -= dt;
     if (world.nextSignIn <= 0) {
