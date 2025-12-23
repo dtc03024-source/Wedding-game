@@ -385,8 +385,8 @@ let isSubmittingGift = false;
 
     if (!giftStatusEl) return;
 
-    const name = (giftNameEl?.value || "").trim();
-    const phoneRaw = (giftPhoneEl?.value || "").trim();
+    const name = ((giftNameEl && giftNameEl.value) || "").trim();
+    const phoneRaw = ((giftPhoneEl && giftPhoneEl.value) || "").trim();
     const phone = phoneRaw.replace(/[^0-9]/g, "");
 
     if (!name) {
@@ -431,11 +431,12 @@ let isSubmittingGift = false;
   }
 
 
-    btnInviteLink?.addEventListener("click", (e) => {
-    e.preventDefault();
-    window.location.href = INVITE_URL;
-  });
-
+    if (btnInviteLink) {
+    btnInviteLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      window.location.href = INVITE_URL;
+    });
+  }
 // ===== Buttons =====
   btnStart.addEventListener("click", () => {
     startOverlay.classList.add("hidden");
@@ -490,10 +491,11 @@ btnOpenGuide2.addEventListener("click", () => {
     paused = false;
     resetGame();
   });
-  btnGiftSubmit?.addEventListener("click", submitGiftEntry);
-  btnGiftSubmit?.addEventListener("pointerup", submitGiftEntry);
-
-  btnFinalClose.addEventListener("click", () => {
+  if (btnGiftSubmit) {
+    btnGiftSubmit.addEventListener("click", submitGiftEntry);
+    btnGiftSubmit.addEventListener("pointerup", submitGiftEntry);
+  }
+btnFinalClose.addEventListener("click", () => {
     try { window.close(); } catch (e) {}
     if (giftStatusEl) giftStatusEl.textContent = "브라우저에서 탭을 닫아 주세요.";
   });
