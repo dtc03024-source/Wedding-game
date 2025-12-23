@@ -4,6 +4,8 @@
 
   // ===== External links / API =====
   const INVITE_URL = "https://m.site.naver.com/1VRaQ";
+
+let isSubmittingGift = false;
   const API_URL = "https://script.google.com/macros/s/AKfycbwrMjZy_pjLr3YUSh-ylaxJpfzH23Ik-h7awy6fF4Q3Doha0P2dvPmCt2LhMv7p0v4Tpw/exec";
   const SPEED_SCALE = 0.7; // 30% slower
 
@@ -378,15 +380,26 @@
   }
 
   async function submitGiftEntry() {
+    // ✅ 이미 전송 중이면 재진입 차단
+    if (isSubmittingGift) return;
+
     if (!giftStatusEl) return;
 
     const name = (giftNameEl?.value || "").trim();
     const phoneRaw = (giftPhoneEl?.value || "").trim();
     const phone = phoneRaw.replace(/[^0-9]/g, "");
 
-    if (!name) { giftStatusEl.textContent = "이름을 입력해 주세요."; return; }
-    if (phone.length < 10) { giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요."; return; }
+    if (!name) {
+      giftStatusEl.textContent = "이름을 입력해 주세요.";
+      return;
+    }
+    if (phone.length < 10) {
+      giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요.";
+      return;
+    }
 
+    // ✅ 전송 시작
+    isSubmittingGift = true;
     giftStatusEl.textContent = "응모 중입니다…";
     if (btnGiftSubmit) btnGiftSubmit.disabled = true;
 
@@ -396,6 +409,17 @@
         mode: "no-cors",
         body: new URLSearchParams({ name, phone }),
       });
+
+      giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
+      if (giftNameEl) giftNameEl.disabled = true;
+      if (giftPhoneEl) giftPhoneEl.disabled = true;
+    } catch (e) {
+      // 실패 시 다시 입력 가능하게 복구
+      giftStatusEl.textContent = "전송 실패. 네트워크 확인 후 다시 시도해 주세요.";
+      if (btnGiftSubmit) btnGiftSubmit.disabled = false;
+      isSubmittingGift = false;
+    }
+  });
 
       giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
       if (giftNameEl) giftNameEl.disabled = true;
