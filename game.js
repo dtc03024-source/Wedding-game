@@ -1,6 +1,12 @@
-(() => {
+window.addEventListener("DOMContentLoaded", () => {
   const canvas = document.getElementById("game");
+  if (!canvas) { console.error("Canvas #game not found"); return; }
   const ctx = canvas.getContext("2d");
+
+  function safeOn(el, type, handler, opts) {
+    if (!el) { console.warn("Missing element for", type); return; }
+    el.addEventListener(type, handler, opts);
+  }
 
   // ===== External links / API =====
   const INVITE_URL = "https://m.site.naver.com/1VRaQ";
@@ -432,13 +438,13 @@ let isSubmittingGift = false;
 
 
     if (btnInviteLink) {
-    btnInviteLink.addEventListener("click", function (e) {
+    safeOn(btnInviteLink, "click", function (e) {
       e.preventDefault();
       window.location.href = INVITE_URL;
     });
   }
 // ===== Buttons =====
-  btnStart.addEventListener("click", () => {
+  safeOn(btnStart, "click", () => {
     startOverlay.classList.add("hidden");
     finalOverlay.classList.add("hidden");
     running = true;
@@ -446,13 +452,13 @@ let isSubmittingGift = false;
     resetGame();
   });
 
-  btnGuide.addEventListener("click", () => {
+  safeOn(btnGuide, "click", () => {
     if (!running) return;
     paused = true;
     pauseOverlay.classList.add("hidden");
     guideOverlay.classList.remove("hidden");
   });
-  btnGuideCloseGuide.addEventListener("click", () => {
+  safeOn(btnGuideCloseGuide, "click", () => {
     guideOverlay.classList.add("hidden");
 
     // Return to the right overlay/state
@@ -467,35 +473,35 @@ let isSubmittingGift = false;
     }
     paused = false;
   });
-btnOpenGuide2.addEventListener("click", () => {
+safeOn(btnOpenGuide2, "click", () => {
     gameOverOverlay.classList.add("hidden");
     guideOverlay.classList.remove("hidden");
   });
-  btnRetry.addEventListener("click", () => {
+  safeOn(btnRetry, "click", () => {
     gameOverOverlay.classList.add("hidden");
     paused = false;
     resetGame();
   });
-  btnPause.addEventListener("click", () => {
+  safeOn(btnPause, "click", () => {
     if (!running) return;
     if (world.reached) return;
     paused = true;
     pauseOverlay.classList.remove("hidden");
   });
-  btnResume.addEventListener("click", () => {
+  safeOn(btnResume, "click", () => {
     pauseOverlay.classList.add("hidden");
     paused = false;
   });
-  btnFinalRestart.addEventListener("click", () => {
+  safeOn(btnFinalRestart, "click", () => {
     finalOverlay.classList.add("hidden");
     paused = false;
     resetGame();
   });
   if (btnGiftSubmit) {
-    btnGiftSubmit.addEventListener("click", submitGiftEntry);
-    btnGiftSubmit.addEventListener("pointerup", submitGiftEntry);
+    safeOn(btnGiftSubmit, "click", submitGiftEntry);
+    safeOn(btnGiftSubmit, "pointerup", submitGiftEntry);
   }
-btnFinalClose.addEventListener("click", () => {
+safeOn(btnFinalClose, "click", () => {
     try { window.close(); } catch (e) {}
     if (giftStatusEl) giftStatusEl.textContent = "브라우저에서 탭을 닫아 주세요.";
   });
@@ -1057,4 +1063,23 @@ btnFinalClose.addEventListener("click", () => {
     requestAnimationFrame(tick);
   }
   boot();
-})();
+  // ===== Fallback bindings (in case earlier init aborted) =====
+  safeOn(btnStart, "click", () => {
+    startOverlay?.classList.add("hidden");
+    hud?.classList.remove("hidden");
+    paused = false;
+  });
+  safeOn(btnStart, "pointerup", () => {
+    startOverlay?.classList.add("hidden");
+    hud?.classList.remove("hidden");
+    paused = false;
+  });
+  safeOn(btnGuideCloseGuide, "click", () => {
+    guideOverlay?.classList.add("hidden");
+    if (!player?.alive) {
+      gameOverOverlay?.classList.remove("hidden");
+      paused = true;
+    }
+  });
+
+});
