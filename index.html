@@ -52,7 +52,8 @@
     #finalOverlay .gift-form{margin-top:16px}
 
     a.btn{display:inline-flex; align-items:center; justify-content:center; text-decoration:none;}
-  </style>
+      .noWrap{white-space:nowrap;}
+</style>
 </head>
 <body>
   <div class="wrap">
@@ -71,7 +72,7 @@
     <div id="startOverlay" class="overlay">
       <div class="card">
         <h1 class="title">💗 웨딩 런</h1>
-        <p class="sub">화면을 탭해서 점프! 장애물을 넘어서 예식장까지 도착해요.<br/><b>조작:</b> 화면 터치 = 점프 / <b>빠르게 2번 터치 = 2단점프</b><br/>목표 점수 <b>120점</b> (장애물 1개 = 10점)</p>
+        <p class="sub">화면을 탭해서 점프! 장애물을 넘어서 예식장까지 도착해요.<br/><span class="noWrap"><b>조작:</b>&nbsp;화면&nbsp;터치&nbsp;=&nbsp;점프&nbsp;/&nbsp;<b>빠르게&nbsp;2번&nbsp;터치&nbsp;=&nbsp;2단점프</b></span><br/>목표 점수 <b>120점</b> (장애물 1개 = 10점)</p>
         <div class="row">
           <button id="btnStart" type="button" class="btn primary">시작하기</button>
           <button id="btnOpenGuideStart" class="btn" onclick="document.getElementById('guideOverlay').classList.remove('hidden')">길안내 보기</button>
