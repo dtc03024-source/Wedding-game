@@ -4,7 +4,7 @@
 
   // ===== External links / API =====
   const INVITE_URL = "https://m.site.naver.com/1VRaQ";
-  const API_URL = "https://script.google.com/macros/s/AKfycbxeiHace85Olrq9H233_Lcfs-OoLkhjmOMYbQVevb09QnxgSnr0F7JiJNHzx7p5U1Dnlg/exec";
+  const API_URL = "https://script.google.com/macros/s/AKfycbwrMjZy_pjLr3YUSh-ylaxJpfzH23Ik-h7awy6fF4Q3Doha0P2dvPmCt2LhMv7p0v4Tpw/exec";
   const SPEED_SCALE = 0.7; // 30% slower
 
 
@@ -388,6 +388,7 @@
     if (phone.length < 10) { giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요."; return; }
 
     giftStatusEl.textContent = "응모 중입니다…";
+    if (btnGiftSubmit) btnGiftSubmit.disabled = true;
 
     try {
       await fetch(API_URL, {
@@ -395,17 +396,23 @@
         mode: "no-cors",
         body: new URLSearchParams({ name, phone }),
       });
-giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
-      if (btnGiftSubmit) btnGiftSubmit.disabled = true;
+
+      giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
       if (giftNameEl) giftNameEl.disabled = true;
       if (giftPhoneEl) giftPhoneEl.disabled = true;
     } catch (e) {
       giftStatusEl.textContent = "전송 실패. 네트워크 확인 후 다시 시도해 주세요.";
+      if (btnGiftSubmit) btnGiftSubmit.disabled = false;
     }
   }
 
 
-  // ===== Buttons =====
+    btnInviteLink?.addEventListener("click", (e) => {
+    e.preventDefault();
+    window.location.href = INVITE_URL;
+  });
+
+// ===== Buttons =====
   btnStart.addEventListener("click", () => {
     startOverlay.classList.add("hidden");
     finalOverlay.classList.add("hidden");
@@ -423,15 +430,19 @@ giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
   btnGuideCloseGuide.addEventListener("click", () => {
     guideOverlay.classList.add("hidden");
 
-    // If guide was opened from Game Over, return to Game Over overlay
+    // Return to the right overlay/state
     if (!player.alive) {
       gameOverOverlay.classList.remove("hidden");
       paused = true;
-    } else {
-      paused = false;
+      return;
     }
+    if (!pauseOverlay.classList.contains("hidden")) {
+      paused = true;
+      return;
+    }
+    paused = false;
   });
-  btnOpenGuide2.addEventListener("click", () => {
+btnOpenGuide2.addEventListener("click", () => {
     gameOverOverlay.classList.add("hidden");
     guideOverlay.classList.remove("hidden");
   });
@@ -456,16 +467,13 @@ giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
     resetGame();
   });
   btnGiftSubmit?.addEventListener("click", submitGiftEntry);
+  btnGiftSubmit?.addEventListener("pointerup", submitGiftEntry);
 
   btnFinalClose.addEventListener("click", () => {
-    finalOverlay.classList.add("hidden");
-    running = false;
-    paused = false;
-    startOverlay.classList.remove("hidden");
-    hud.classList.remove("hidden");
+    try { window.close(); } catch (e) {}
+    if (giftStatusEl) giftStatusEl.textContent = "브라우저에서 탭을 닫아 주세요.";
   });
-
-  // ===== Collision =====
+// ===== Collision =====
   function aabb(ax, ay, aw, ah, bx, by, bw, bh) {
     return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
   }

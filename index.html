@@ -47,6 +47,10 @@
     input{width:100%; padding:12px 12px; border-radius:14px; border:1px solid rgba(60,38,52,.18); background:white; font-size:16px; margin:0 0 10px;}
     .form-note{font-size:12px; opacity:.75; line-height:1.4; margin-top:8px;}
     .status{margin-top:10px; font-weight:900;}
+    #finalOverlay .row{gap:12px}
+    #finalOverlay a.btn{flex:1 1 100%}
+    #finalOverlay .gift-form{margin-top:16px}
+
     a.btn{display:inline-flex; align-items:center; justify-content:center; text-decoration:none;}
   </style>
 </head>
@@ -58,8 +62,8 @@
     <div id="hud" class="">
       <div class="pill">점수 <b id="score">0</b></div>
       <div class="hudBtns">
-        <button id="btnGuide" class="btnSmall">길안내</button>
-        <button id="btnPause" class="btnSmall">일시정지</button>
+        <button id="btnGuide" type="button" class="btnSmall">길안내</button>
+        <button id="btnPause" type="button" class="btnSmall">일시정지</button>
       </div>
     </div>
 
@@ -69,8 +73,8 @@
         <h1 class="title">💗 웨딩 런</h1>
         <p class="sub">화면을 탭해서 점프! 장애물을 넘어서 예식장까지 도착해요.<br/>목표 점수 <b>120점</b> (장애물 1개 = 10점)</p>
         <div class="row">
-          <button id="btnStart" class="btn primary">시작하기</button>
-          <button id="btnGuideClose" class="btn" onclick="document.getElementById('guideOverlay').classList.remove('hidden')">길안내 보기</button>
+          <button id="btnStart" type="button" class="btn primary">시작하기</button>
+          <button id="btnOpenGuideStart" class="btn" onclick="document.getElementById('guideOverlay').classList.remove('hidden')">길안내 보기</button>
         </div>
       </div>
     </div>
@@ -84,7 +88,7 @@
           <img src="assets/map.png" alt="길안내 지도" />
         </div>
         <div class="row" style="margin-top:12px">
-          <button id="btnGuideCloseGuide" class="btn primary">닫기</button>
+          <button id="btnGuideCloseGuide" type="button" class="btn primary">닫기</button>
         </div>
       </div>
     </div>
@@ -95,7 +99,7 @@
         <h2 class="title">⏸ 잠깐 멈춤</h2>
         <p class="sub">준비되면 다시 시작!</p>
         <div class="row">
-          <button id="btnResume" class="btn primary">계속</button>
+          <button id="btnResume" type="button" class="btn primary">계속</button>
         </div>
       </div>
     </div>
@@ -109,8 +113,8 @@
           <img id="deathPhoto" src="" alt="웨딩 사진" />
         </div>
         <div class="row" style="margin-top:12px">
-          <button id="btnRetry" class="btn primary">다시 도전</button>
-          <button id="btnOpenGuide2" class="btn">길안내 보기</button>
+          <button id="btnRetry" type="button" class="btn primary">다시 도전</button>
+          <button id="btnOpenGuide2" type="button" class="btn">길안내 보기</button>
         </div>
         <div class="form-note">팁: 민트는 “안내”, 핑크는 “장애물”!</div>
       </div>
@@ -123,21 +127,21 @@
         <p class="sub">모바일 청첩장을 바로 열어볼 수 있어요.</p>
 
         <div class="row">
-          <a id="btnInviteLink" class="btn mint" href="#" target="_blank" rel="noopener">모바일 청첩장 바로 열기</a>
-          <button id="btnFinalRestart" class="btn">다시 플레이</button>
+          <a id="btnInviteLink" class="btn mint" href="https://m.site.naver.com/1VRaQ" target="_self" rel="noopener">모바일 청첩장 바로 열기</a>
+          <button id="btnFinalRestart" type="button" class="btn">다시 플레이</button>
         </div>
 
         <div class="gift-form">
           <div class="form-title">🎁 추첨 이벤트 참여</div>
           <input id="giftName" type="text" placeholder="이름" autocomplete="name" />
           <input id="giftPhone" type="tel" placeholder="휴대폰번호 (예: 01012345678)" inputmode="numeric" />
-          <button id="btnGiftSubmit" class="btn primary">응모하기</button>
+          <button id="btnGiftSubmit" type="button" class="btn primary">응모하기</button>
           <div class="form-note">※ 입력하신 정보는 추첨 및 안내용으로만 사용됩니다.</div>
-          <div id="giftStatus" class="status"></div>
+          <div id="giftStatus" class="status" aria-live="polite"></div>
         </div>
 
         <div class="row" style="margin-top:12px">
-          <button id="btnFinalClose" class="btn">종료</button>
+          <button id="btnFinalClose" type="button" class="btn">종료</button>
         </div>
       </div>
     </div>
