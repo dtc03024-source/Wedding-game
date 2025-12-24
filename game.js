@@ -3,12 +3,9 @@
   const ctx = canvas.getContext("2d");
 
   // ===== External links / API =====
-  const INVITE_URL = "https://m.site.naver.com/1VRaQ";
+  const INVITE_URL = "https://salondeletter.com/w/8kub8vyuib";
   const API_URL = "https://script.google.com/macros/s/AKfycbwrMjZy_pjLr3YUSh-ylaxJpfzH23Ik-h7awy6fF4Q3Doha0P2dvPmCt2LhMv7p0v4Tpw/exec";
   const SPEED_SCALE = 0.7; // 30% slower
-
-  let isSubmittingGift = false;
-  let isGiftSubmitted = false;
 
 
   // ===== UI =====
@@ -373,8 +370,6 @@
   // ===== Ending UI (invite + gift) =====
   function prepareFinalUI() {
     if (btnInviteLink) btnInviteLink.href = INVITE_URL;
-    isSubmittingGift = false;
-    isGiftSubmitted = false;
 
     if (giftNameEl) { giftNameEl.disabled = false; giftNameEl.value = ""; }
     if (giftPhoneEl) { giftPhoneEl.disabled = false; giftPhoneEl.value = ""; }
@@ -385,17 +380,12 @@
   async function submitGiftEntry() {
     if (!giftStatusEl) return;
 
-    // prevent double submit (rapid taps / multiple events)
-    if (isGiftSubmitted) return;
-    if (isSubmittingGift) return;
-    isSubmittingGift = true;
-
     const name = (giftNameEl?.value || "").trim();
     const phoneRaw = (giftPhoneEl?.value || "").trim();
     const phone = phoneRaw.replace(/[^0-9]/g, "");
 
-    if (!name) { giftStatusEl.textContent = "이름을 입력해 주세요."; isSubmittingGift = false; return; }
-    if (phone.length < 10) { giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요."; isSubmittingGift = false; return; }
+    if (!name) { giftStatusEl.textContent = "이름을 입력해 주세요."; return; }
+    if (phone.length < 10) { giftStatusEl.textContent = "휴대폰번호를 정확히 입력해 주세요."; return; }
 
     giftStatusEl.textContent = "응모 중입니다…";
     if (btnGiftSubmit) btnGiftSubmit.disabled = true;
@@ -407,19 +397,14 @@
         body: new URLSearchParams({ name, phone }),
       });
 
-      // In no-cors we can't read the response; assume success if request didn't throw.
-      isGiftSubmitted = true;
       giftStatusEl.textContent = "✅ 응모 완료! 감사합니다 :)";
       if (giftNameEl) giftNameEl.disabled = true;
       if (giftPhoneEl) giftPhoneEl.disabled = true;
-      if (btnGiftSubmit) btnGiftSubmit.disabled = true;
     } catch (e) {
       giftStatusEl.textContent = "전송 실패. 네트워크 확인 후 다시 시도해 주세요.";
-      isSubmittingGift = false;
       if (btnGiftSubmit) btnGiftSubmit.disabled = false;
     }
   }
-
 
 
     btnInviteLink?.addEventListener("click", (e) => {
@@ -482,7 +467,9 @@ btnOpenGuide2.addEventListener("click", () => {
     resetGame();
   });
   btnGiftSubmit?.addEventListener("click", submitGiftEntry);
-btnFinalClose.addEventListener("click", () => {
+  btnGiftSubmit?.addEventListener("pointerup", submitGiftEntry);
+
+  btnFinalClose.addEventListener("click", () => {
     try { window.close(); } catch (e) {}
     if (giftStatusEl) giftStatusEl.textContent = "브라우저에서 탭을 닫아 주세요.";
   });
